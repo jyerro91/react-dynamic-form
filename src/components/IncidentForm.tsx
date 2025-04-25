@@ -12,6 +12,9 @@ import {
   Typography,
   Paper,
   Divider,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
 } from '@material-ui/core';
 
 import {
@@ -186,6 +189,40 @@ const IncidentForm: React.FC<IncidentFormProps> = ({ onSubmit }) => {
                     </MenuItem>
                   ))}
                 </Select>
+                {errorMessage && <FormHelperText>{errorMessage}</FormHelperText>}
+              </FormControl>
+            )}
+          />
+        );
+        
+      case 'radio':
+        return (
+          <Controller
+            key={name}
+            name={name as any}
+            control={control}
+            render={({ field: { onChange, value, ref } }) => (
+              <FormControl
+                fullWidth
+                margin="normal"
+                error={!!errorMessage}
+                required={required}
+              >
+                <Typography variant="subtitle1">{label}</Typography>
+                <RadioGroup
+                  row
+                  value={value || ''}
+                  onChange={onChange}
+                >
+                  {options?.map((option) => (
+                    <FormControlLabel
+                      key={option}
+                      value={option}
+                      control={<Radio />}
+                      label={capitalize(option)}
+                    />
+                  ))}
+                </RadioGroup>
                 {errorMessage && <FormHelperText>{errorMessage}</FormHelperText>}
               </FormControl>
             )}

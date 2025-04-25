@@ -81,7 +81,7 @@ export const getDefaultValuesForType = (type: IncidentType): Partial<Incident> =
 export interface Field {
   name: string;
   label: string;
-  type: 'text' | 'select' | 'date' | 'textarea';
+  type: 'text' | 'select' | 'date' | 'textarea' | 'radio';
   options?: string[];
   required?: boolean;
 }
