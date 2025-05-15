@@ -34,6 +34,14 @@ jest.mock('../../styles', () => ({
   })
 }));
 
+// Mock Material-UI icon
+jest.mock('@material-ui/icons/HelpOutline', () => {
+  return {
+    __esModule: true,
+    default: () => <div data-testid="HelpOutlineIcon" />
+  };
+});
+
 describe('PriorityForm', () => {
   // Helper function to interact with Material-UI Select
   const selectOption = async (labelText: RegExp, optionText: string) => {
@@ -84,7 +92,7 @@ describe('PriorityForm', () => {
   test('calculates priority based on impact and urgency', async () => {
     renderForm();
 
-    // Set high impact and urgency
+    // Set high impact and urgency for Critical priority
     await selectOption(/impact/i, 'High - Service unusable');
     await selectOption(/urgency/i, 'High - Work cannot continue');
 
@@ -98,7 +106,7 @@ describe('PriorityForm', () => {
       expect(priorityElement).toBeInTheDocument();
     });
 
-    // Set medium impact
+    // Set medium impact for High priority
     await selectOption(/impact/i, 'Medium - Service degraded');
 
     // Check for high priority
@@ -107,6 +115,19 @@ describe('PriorityForm', () => {
         const text = content.toLowerCase();
         return text.includes('calculated incident priority') && 
                text.includes('2high - p2');
+      });
+      expect(priorityElement).toBeInTheDocument();
+    });
+    
+    // Test Low impact and Low urgency for Medium priority
+    await selectOption(/impact/i, 'Low - Minimal impact');
+    await selectOption(/urgency/i, 'Low - Can wait');
+    
+    await waitFor(() => {
+      const priorityElement = screen.getByText((content) => {
+        const text = content.toLowerCase();
+        return text.includes('calculated incident priority') && 
+               text.includes('3medium - p3');
       });
       expect(priorityElement).toBeInTheDocument();
     });
@@ -136,5 +157,45 @@ describe('PriorityForm', () => {
       expect(priorityElement).toBeInTheDocument();
     });
   });
+  
+  test('displays help icon for priority calculation', async () => {
+    renderForm();
+    
+    // Select values to trigger priority display
+    await selectOption(/impact/i, 'High - Service unusable');
+    await selectOption(/urgency/i, 'High - Work cannot continue');
+    
+    // Check if help icon is displayed
+    await waitFor(() => {
+      expect(screen.getByTestId('HelpOutlineIcon')).toBeInTheDocument();
+    });
+  });
+  
+  test('allows changing selections multiple times', async () => {
+    renderForm();
+    
+    // First selection
+    await selectOption(/impact/i, 'High - Service unusable');
+    await selectOption(/urgency/i, 'High - Work cannot continue');
+    
+    await waitFor(() => {
+      expect(screen.getByText(/1critical - p1/i)).toBeInTheDocument();
+    });
+    
+    // Change to different values
+    await selectOption(/impact/i, 'Low - Minimal impact');
+    await selectOption(/urgency/i, 'Low - Can wait');
+    
+    await waitFor(() => {
+      expect(screen.getByText(/3medium - p3/i)).toBeInTheDocument();
+    });
+    
+    // Change again
+    await selectOption(/impact/i, 'High - Service unusable');
+    await selectOption(/urgency/i, 'Medium - Needs attention soon');
+    
+    await waitFor(() => {
+      expect(screen.getByText(/2high - p2/i)).toBeInTheDocument();
+    });
+  });
 });
-
